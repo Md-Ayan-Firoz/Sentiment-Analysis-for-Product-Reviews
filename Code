@@ -13,3 +13,24 @@ from wordcloud import WordCloud
 
 df = pd.read_csv(r"C:\Users\ayanf\Downloads\amazon.csv")
 df.head()
+
+
+print(f"Dataset Shape : {df.shape}")
+print(f"Column Names : {df.columns}")
+df.isnull().sum()
+df.dropna(inplace = True)
+print(f"Dataset Shape After removing NULL values : {df.shape}")
+df.dtypes
+df.rename(columns={'reviewText': 'review'}, inplace=True)
+df.head()
+print(f"Rating value count : \n{df['overall'].value_counts()}")
+
+
+# Bar plot to visulalize the total counts for each rating.
+
+df['overall'].value_counts().plot.bar(color='skyblue')
+plt.title("Rating Distribution Count")
+plt.xlabel("Ratings")
+plt.xticks(rotation=0)
+plt.ylabel("Count")
+plt.show()
