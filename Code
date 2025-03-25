@@ -34,3 +34,27 @@ plt.xlabel("Ratings")
 plt.xticks(rotation=0)
 plt.ylabel("Count")
 plt.show()
+
+
+print(f"Rating in Percentage Distribution : \n{round(df['overall'].value_counts()/df.shape[0]*100,2)}")
+
+rating_counts = df['overall'].value_counts()
+
+# Define colors, explode, and other properties
+colors = ('red', 'green', 'orange', 'pink', 'yellow')
+explode = (0.4, 0.4, 0.4, 0.4, 0.4)  # Slightly separate the slices
+wedge_properties = {'linewidth': 1, 'edgecolor': 'black'}
+
+# Create the pie chart
+fig, ax = plt.subplots(figsize=(7, 7))
+ax.pie(rating_counts, labels=rating_counts.index, autopct='%1.1f%%', startangle=90,
+       colors=colors, explode=explode, wedgeprops=wedge_properties, shadow=True)
+
+# Add a title below the pie chart
+plt.xlabel('Percentage-wise Distribution of Ratings', fontsize=14, labelpad=20)
+
+# Adjust layout to make space for the title
+plt.subplots_adjust(bottom=0.2)
+
+# Show the plot
+plt.show()
