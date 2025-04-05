@@ -58,3 +58,54 @@ plt.subplots_adjust(bottom=0.2)
 
 # Show the plot
 plt.show()
+
+# Map 'overall' ratings to sentiment
+sentiment_map = {1: 'negative', 2: 'negative', 3: 'neutral', 4: 'positive', 5: 'positive'}
+df['sentiment'] = df['overall'].map(sentiment_map)
+
+# Clean text data
+def clean_text(text):
+    text = text.lower()
+    text = re.sub(f"[{string.punctuation}]", "", text)
+    text = re.sub(r'\d+', '', text)
+    text = re.sub(r'\s+', ' ', text).strip()
+    return text
+
+df['cleaned_review'] = df['review'].astype(str).apply(clean_text)
+
+df['word_count'] = df['cleaned_review'].apply(lambda x: len(x.split()))
+
+# Convert text to numerical representation using TF-IDF
+vectorizer = TfidfVectorizer(max_features=5000)
+X = vectorizer.fit_transform(df['cleaned_review']).toarray()
+y = df['sentiment'].map({'positive': 1, 'negative': 0, 'neutral': 2})
+
+# Apply PCA for dimensionality reduction
+pca = PCA(n_components=100)
+X_pca = pca.fit_transform(X)
+
+# Split data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X_pca, y, test_size=0.2, random_state=42)
+
+# Train SVM model for sentiment classification
+svm_model = SVC(kernel='linear')
+svm_model.fit(X_train, y_train)
+
+# Make predictions
+y_pred = svm_model.predict(X_test)
+
+# Evaluate model performance
+accuracy = accuracy_score(y_test, y_pred)
+print(f'Accuracy: {accuracy:.2f}')
+print("Classification Report:")
+print(classification_report(y_test, y_pred, zero_division=1))
+
+# Display confusion matrix
+plt.figure(figsize=(8,6))
+sns.heatmap(confusion_matrix(y_test, y_pred), annot=True, cmap='Blues', fmt='d', 
+            xticklabels=['Negative', 'Neutral', 'Positive'], 
+            yticklabels=['Negative', 'Neutral', 'Positive'])
+plt.xlabel('Predicted')
+plt.ylabel('Actual')
+plt.title('Confusion Matrix')
+plt.show()
