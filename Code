@@ -135,3 +135,118 @@ plt.ylabel("Predicted Ratings")
 plt.title("Actual vs Predicted Ratings (Linear Regression)")
 plt.axline((0, 0), slope=1, color="red", linestyle="--")  # Perfect Prediction Line
 plt.show()
+
+# Sentiment distribution bar chart
+plt.figure(figsize=(6,4))
+sns.countplot(x=df['sentiment'], hue=df['sentiment'], palette='coolwarm', legend=False)
+plt.xlabel("Sentiment")
+plt.ylabel("Count")
+plt.title("Sentiment Distribution in Reviews")
+plt.show()
+
+# Sentiment distribution pie chart
+sentiment = df['sentiment'].value_counts()
+
+# Define colors, explode, and other properties
+colors = ('yellow', 'pink', 'grey')
+explode = (0.2, 0.2, 0.2)  # Slightly separate the slices
+wedge_properties = {'linewidth': 1, 'edgecolor': 'black'}
+
+# Create the pie chart
+fig, ax = plt.subplots(figsize=(7, 7))
+ax.pie(sentiment, labels=sentiment.index, autopct='%1.1f%%', startangle=90,
+       colors=colors, explode=explode, wedgeprops=wedge_properties, shadow=True)
+
+# Add a title below the pie chart
+plt.xlabel('Sentiment Distribution', fontsize=14, labelpad=20)
+
+# Adjust layout to make space for the title
+plt.subplots_adjust(bottom=0.2)
+
+# Show the plot
+plt.show()
+
+# PCA Variance Explained
+pca_variance = PCA(n_components=100).fit(X)
+plt.figure(figsize=(8,5))
+plt.plot(np.cumsum(pca_variance.explained_variance_ratio_), color='purple')
+plt.xlabel("Number of Components")
+plt.ylabel("Explained Variance")
+plt.title("Explained Variance by PCA Components")
+plt.grid()
+plt.show()
+
+# Generate Word Clouds for Different Sentiments
+sentiments = ['positive', 'negative', 'neutral']
+colors_dict = {'positive': 'Greens', 'negative': 'Reds', 'neutral': 'Blues'}
+
+for sentiment in sentiments:
+    text_data = " ".join(df[df['sentiment'] == sentiment]['cleaned_review'])
+    wordcloud = WordCloud(width=800, height=400, background_color='white', colormap=colors_dict[sentiment]).generate(text_data)
+    plt.figure(figsize=(10,5))
+    plt.imshow(wordcloud, interpolation='bilinear')
+    plt.axis("off")
+    plt.title(f"Word Cloud for {sentiment.capitalize()} Reviews")
+    plt.show()
+
+# Box Plot for Word Count Distribution
+plt.figure(figsize=(7,5))
+sns.boxplot(x='sentiment', y='word_count', data=df, hue='sentiment', palette='coolwarm', legend=False)
+plt.xlabel("Sentiment")
+plt.ylabel("Word Count")
+plt.title("Word Count Distribution per Sentiment")
+plt.show()
+
+# Violin Plot for Word Count Distribution
+plt.figure(figsize=(7,5))
+sns.violinplot(x=y, y=np.mean(X, axis=1), hue=y, palette='coolwarm', legend=False)
+plt.xlabel("Sentiment")
+plt.ylabel("Average TF-IDF Score")
+plt.title("TF-IDF Score Distribution by Sentiment")
+plt.show()
+
+# Create a DataFrame with relevant numerical features
+df_numeric = pd.DataFrame({
+    'word_count': df['word_count'],
+    'avg_tfidf': np.mean(X, axis=1),
+    'sentiment_encoded': y
+})
+
+# Generate a correlation matrix
+corr_matrix = df_numeric.corr()
+
+# Plot heatmap
+plt.figure(figsize=(6, 4))
+sns.heatmap(corr_matrix, annot=True, cmap='coolwarm', fmt=".2f")
+plt.title("Heatmap: Correlation Between Word Count, Avg TF-IDF, and Sentiment")
+plt.show()
+
+from mpl_toolkits.mplot3d import Axes3D
+
+# Apply PCA with 3 components for 3D plot
+pca_3d = PCA(n_components=3)
+X_pca_3d = pca_3d.fit_transform(X)
+
+# Create 3D scatter plot
+fig = plt.figure(figsize=(10, 9))
+ax = fig.add_subplot(111, projection='3d')
+
+# Scatter plot with color-coded sentiments
+scatter = ax.scatter(X_pca_3d[:, 0], X_pca_3d[:, 1], X_pca_3d[:, 2],
+                     c=y, cmap='coolwarm', alpha=0.6)
+
+# Set labels
+ax.set_xlabel("PCA 1")
+ax.set_ylabel("PCA 2")
+ax.set_zlabel("PCA 3")
+ax.set_title("3D Scatter Plot: PCA Components Colored by Sentiment")
+
+# Add legend manually
+legend_labels = ['Negative', 'Positive', 'Neutral']
+colors = [scatter.cmap(scatter.norm(i)) for i in [0, 1, 2]]
+custom_legend = [plt.Line2D([0], [0], marker='o', color='w',
+                            markerfacecolor=col, markersize=10)
+                 for col in colors]
+ax.legend(custom_legend, legend_labels, loc='upper right')
+
+plt.show()
